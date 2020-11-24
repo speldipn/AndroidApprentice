@@ -4,11 +4,16 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.PersistableBundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RestrictTo
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,7 +51,9 @@ class MainActivity : AppCompatActivity() {
             resetGame()
         }
 
-        tapMeButton.setOnClickListener(View.OnClickListener {
+        tapMeButton.setOnClickListener(View.OnClickListener {v ->
+            val bounceAnimation = AnimationUtils.loadAnimation(this, R.anim.bounce)
+            v.startAnimation(bounceAnimation)
             increamentScore()
         })
     }
@@ -57,6 +64,34 @@ class MainActivity : AppCompatActivity() {
         outState.putInt(SCORE_KEY, score)
         outState.putLong(TIME_LEFT_KEY, timeLeft)
         countDownTimer.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == R.id.about_item) {
+            showInfo()
+        }
+        return true
+    }
+
+    private fun showInfo() {
+        val title = getString(R.string.about_title, BuildConfig.VERSION_NAME)
+        val msg = getString(R.string.about_message)
+
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(msg)
+            .create()
+            .show()
     }
 
     private fun increamentScore() {
