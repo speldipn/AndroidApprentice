@@ -3,12 +3,20 @@ package com.example.androidapprentice
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.PersistableBundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RestrictTo
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        val SCORE_KEY = "score_key"
+        val TIME_LEFT_KEY = "time_left_key"
+    }
+
     private lateinit var tapMeButton: Button
     private lateinit var gameScoreTextView: TextView
     private lateinit var timeLeftTextView: TextView
@@ -25,15 +33,30 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         tapMeButton = findViewById(R.id.tap_me_button)
         gameScoreTextView = findViewById(R.id.game_score_text_view)
         timeLeftTextView = findViewById(R.id.time_left_text_view)
 
+        savedInstanceState?.let {
+            score = it.getInt(SCORE_KEY, 0)
+            timeLeft = it.getLong(TIME_LEFT_KEY, 0L)
+            restoreGame()
+        } ?: run {
+            resetGame()
+        }
+
         tapMeButton.setOnClickListener(View.OnClickListener {
             increamentScore()
         })
+    }
 
-        resetGame()
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putInt(SCORE_KEY, score)
+        outState.putLong(TIME_LEFT_KEY, timeLeft)
+        countDownTimer.cancel()
     }
 
     private fun increamentScore() {
@@ -43,6 +66,27 @@ class MainActivity : AppCompatActivity() {
 
         score += 1
         gameScoreTextView.text = getString(R.string.your_score, score)
+    }
+
+    private fun restoreGame() {
+        val initialScore = getString(R.string.your_score, score)
+        gameScoreTextView.text = initialScore
+
+        val initialTimeLeft = getString(R.string.time_left, timeLeft)
+        timeLeftTextView.text = initialTimeLeft
+
+        countDownTimer = object : CountDownTimer(timeLeft * 1000, countDownInterval) {
+            override fun onTick(millisUntilFinished: Long) {
+                timeLeft = (millisUntilFinished / 1000) + 1
+                timeLeftTextView.text = getString(R.string.time_left, timeLeft)
+            }
+
+            override fun onFinish() {
+                endGame()
+            }
+        }.start()
+
+        gameStarted = false
     }
 
     private fun resetGame() {
