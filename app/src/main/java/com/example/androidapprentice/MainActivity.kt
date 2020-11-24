@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun endGame() {
-        Toast.makeText(this, "Result: $score", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getString(R.string.game_over_message, score), Toast.LENGTH_LONG).show()
         resetGame()
     }
 }
